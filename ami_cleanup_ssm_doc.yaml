@@ -41,10 +41,12 @@ mainSteps:
           for ami in amis['Images']:
             create_date = ami['CreationDate']
             ami_id = ami['ImageId']
+            snapshot_id = ami['BlockDeviceMappings'][0]['Ebs']['SnapshotId']
             day_old = days_old(create_date)
             
-          if day_old > int(age):
-            print("Deleting below AMIs: \n")
-            print( "AMI-ID: " + ami['ImageId'] + "\t\tCreation Date: "+ ami['CreationDate']+"\t\tDays old:"+ str(day_old) )
+          if day_old >= int(age):
+            print("Deleting below AMIs with corresponding snapshot : \n")
+            print( "AMI-ID:" + ami['ImageId'] + " Creation Date:"+ ami['CreationDate']+" Days old:"+ str(day_old) + " Snapshot:" + snapshot_id)
             ec2.deregister_image(ImageId=ami_id)
+            ec2.delete_snapshot(SnapshotId=snapshot_id) #deleting snapshot
           return {'message': 'Done'}
