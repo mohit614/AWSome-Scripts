@@ -3,8 +3,9 @@
 import boto3
 from dateutil.parser import parse
 import datetime
+import re
 
-age = 0
+age = 0 #Default it is 7 days #you can change it
 
 def days_old(date):
     get_date_obj = parse(date)
@@ -24,11 +25,14 @@ amis = ec2.describe_images(Owners=['self'])
 
 
 for ami in amis['Images']:
-    create_date = ami['CreationDate']
     ami_id = ami['ImageId']
+    create_date = ami['CreationDate']
+    snapshot_id = ami['BlockDeviceMappings'][0]['Ebs']['SnapshotId']
+
     day_old = days_old(create_date)
-    
-    if day_old > age:
-        print("Deleting below AMIs: \n")
-        print( "AMI-ID: " + ami['ImageId'] + "\t\tCreation Date: "+ ami['CreationDate']+"\t\tDays old:"+ str(day_old) )
+    # print( "AMI-ID: " + ami['ImageId'] + "\t\tCreation Date: "+ ami['CreationDate']+"\t\tDays old:"+ str(day_old) )
+    if day_old >= age:
+        print("Deleting below AMIs with corresponding snapshot : \n")
+        print( "AMI-ID: " + ami['ImageId'] + "\t\tCreation Date: "+ ami['CreationDate']+"\t\tDays old:"+ str(day_old) + "Snapshot : " + snapshot_id)
         ec2.deregister_image(ImageId=ami_id)
+        ec2.delete_snapshot(SnapshotId=snapshot_id) #deleting snapshot
