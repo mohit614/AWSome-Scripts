@@ -1,4 +1,6 @@
-import json
+"""
+The script cleans all the SG rules in an account where port 22(ssh) and 3389(rdp) are open to the world.
+"""
 import re
 import boto3
 
